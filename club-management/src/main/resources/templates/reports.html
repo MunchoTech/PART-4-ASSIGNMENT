@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Participation Report</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        table { width: 50%; border-collapse: collapse; }
+        th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+
+    <h1>Participation Report for: <span th:text="${eventName}">Event Name</span></h1>
+
+    <div th:if="${!participants.isEmpty()}">
+        <table>
+            <thead>
+                <tr>
+                    <!-- Changed Header -->
+                    <th>Student ID</th>
+                    <th>Event ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- The loop variable 'p' is a Participation object -->
+                <tr th:each="p : ${participants}">
+                    <!-- This gets the student's ID from the student object -->
+                    <td th:text="${p.student.id}">1</td>
+                    <!-- This gets the event's ID from the event object -->
+                    <td th:text="${p.event.id}">4</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${participants.isEmpty()}">
+        <p>No participants found for this event.</p>
+    </div>
+
+</body>
+</html>
