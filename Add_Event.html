@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Event</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: #fff;
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 32px 28px 24px 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+        }
+        h2 {
+            text-align: center;
+            color: #28a745;
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Add Event</h2>
+    <form th:action="@{/Events}" th:object="${Event}" method="post">
+        <label for="Event_name">Event Name</label>
+        <input type="text" id="Event_name" th:field="*{event_name}" placeholder="Enter event name" required />
+
+        <label for="Event_date">Event Date</label>
+        <input type="date" id="Event_date" th:field="*{event_date}" required />
+
+        <label for="club">Club</label>
+        <select id="club" th:field="*{club}" required>
+            <option value="" disabled selected>Select a club</option>
+            <option th:each="club : ${Clubs}" th:value="${club}" th:text="${club.clubName}"></option>
+        </select>
+
+        <button type="submit">Save Event</button>
+    </form>
+    <a th:href="@{/Events}" class="back-link">Back to Events</a>
+</div>
+</body>
+</html>

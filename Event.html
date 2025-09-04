@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Events</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: #fff;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 32px 28px 24px 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+        }
+        h2 {
+            text-align: center;
+            color: #28a745;
+            margin-bottom: 24px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 18px;
+        }
+        .btn {
+            padding: 7px 16px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+            font-weight: 500;
+            margin-left: 8px;
+            transition: background 0.2s;
+        }
+        .btn-add { background-color: #28a745; }
+        .btn-add:hover { background: #218838; }
+        .btn-edit { background-color: #007bff; }
+        .btn-edit:hover { background: #0056b3; }
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background: #b21f2d; }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 10px 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Events</h2>
+    <div class="top-bar">
+        <a th:href="@{/Events/new}" class="btn btn-add">Add Event</a>
+    </div>
+    <table>
+        <tr>
+            <th>Event ID</th>
+            <th>Event Name</th>
+            <th>Event Date</th>
+             <th>Room ID</th>
+            <th>Club ID</th>
+            <th>Host Club Name</th>
+            <th>Actions</th>
+        </tr>
+        <tr th:each="event : ${Events}">
+            <td th:text="${event.Event_id}"></td>
+            <td th:text="${event.Event_name}"></td>
+            <td th:text="${event.Event_date}"></td>
+            <td th:text="${event.Room_id}"></td>
+            <td th:text="${event.club != null ? event.club.club_id : ''}"></td>
+            <td th:text="${event.club != null ? event.club.club_Name : ''}"></td>
+            <td>
+                <a th:href="@{'/Events/edit/' + ${event.event_id}}" class="btn btn-edit">Edit</a>
+                <a th:href="@{'/Events/delete/' + ${event.event_id}}" class="btn btn-delete">Delete</a>
+            </td>
+        </tr>
+    </table>
+    <div class="top-bar">
+        <a th:href="@{/}" class="btn btn-edit">Home</a>
+    </div>
+</div>
+</body>
+</html>
