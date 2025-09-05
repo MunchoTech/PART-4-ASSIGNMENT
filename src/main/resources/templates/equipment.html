@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Management - Club Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+                <div class="text-center mb-4">
+                    <h4 class="navbar-brand"><i class="fas fa-users-cog me-2"></i>ClubManager</h4>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/dashboard}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/students}">
+                            <i class="fas fa-user-graduate me-2"></i>Students
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/clubs}">
+                            <i class="fas fa-users me-2"></i>Clubs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/events}">
+                            <i class="fas fa-calendar-alt me-2"></i>Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/web/equipment}">
+                            <i class="fas fa-tools me-2"></i>Equipment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/rooms}">
+                            <i class="fas fa-door-open me-2"></i>Rooms
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/registrations}">
+                            <i class="fas fa-clipboard-list me-2"></i>Registrations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/participations}">
+                            <i class="fas fa-handshake me-2"></i>Participations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/equipment-records}">
+                            <i class="fas fa-clipboard-check me-2"></i>Equipment Records
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-tools me-2"></i>Equipment Management</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEquipmentModal">
+                    <i class="fas fa-plus me-2"></i>Add Equipment
+                </button>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" id="equipment-search" placeholder="Search equipment..." onkeyup="filterEquipment()">
+                </div>
+            </div>
+
+            <!-- Equipment Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(equipment)}">
+                        <div class="text-center py-5">
+                            <i class="fas fa-tools fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No equipment found</h5>
+                            <p class="text-muted">Add your first equipment to get started!</p>
+                        </div>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(equipment)}" class="table-responsive">
+                        <table class="table table-hover" id="equipment-table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Equipment Name</th>
+                                <th>Total Equipment</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="equipment : ${equipment}" class="equipment-row">
+                                <td th:text="${equipment.equipmentId}">ID</td>
+                                <td th:text="${equipment.equipmentName}" class="equipment-name">Equipment Name</td>
+                                <td th:text="${equipment.totalEquipment}">Total Equipment</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            th:data-id="${equipment.equipmentId}"
+                                            onclick="editEquipment(this.getAttribute('data-id'))">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            th:data-id="${equipment.equipmentId}"
+                                            th:data-name="${equipment.equipmentName}"
+                                            onclick="confirmDeleteEquipment(this.getAttribute('data-id'), this.getAttribute('data-name'))">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- Add Equipment Modal -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Equipment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addEquipmentForm" onsubmit="addEquipment(event)">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="equipmentName" class="form-label">Equipment Name</label>
+                        <input type="text" class="form-control" id="equipmentName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="totalEquipment" class="form-label">Total Equipment</label>
+                        <input type="number" class="form-control" id="totalEquipment" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Equipment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Equipment Modal -->
+<div class="modal fade" id="editEquipmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Equipment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editEquipmentForm" onsubmit="updateEquipment(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="editEquipmentId">
+                    <div class="mb-3">
+                        <label for="editEquipmentName" class="form-label">Equipment Name</label>
+                        <input type="text" class="form-control" id="editEquipmentName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTotalEquipment" class="form-label">Total Equipment</label>
+                        <input type="number" class="form-control" id="editTotalEquipment" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Equipment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteEquipmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteEquipmentName"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="deleteEquipment()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE_URL = '/api';
+    let equipmentToDelete = null;
+
+    // Filter equipment
+    function filterEquipment() {
+        const search = document.getElementById('equipment-search').value.toLowerCase();
+        const rows = document.querySelectorAll('.equipment-row');
+        rows.forEach(row => {
+            const name = row.querySelector('.equipment-name').textContent.toLowerCase();
+            if (name.includes(search)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Add equipment
+    async function addEquipment(event) {
+        event.preventDefault();
+
+        const equipmentData = {
+            equipmentName: document.getElementById('equipmentName').value,
+            totalEquipment: parseInt(document.getElementById('totalEquipment').value)
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(equipmentData)
+            });
+
+            if (response.ok) {
+                // Close modal and refresh page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addEquipmentModal'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Error adding equipment');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding equipment');
+        }
+    }
+
+    // Edit equipment
+    async function editEquipment(equipmentId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment/${equipmentId}`);
+            const equipment = await response.json();
+
+            document.getElementById('editEquipmentId').value = equipment.equipmentId;
+            document.getElementById('editEquipmentName').value = equipment.equipmentName;
+            document.getElementById('editTotalEquipment').value = equipment.totalEquipment;
+
+            const modal = new bootstrap.Modal(document.getElementById('editEquipmentModal'));
+            modal.show();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error loading equipment data');
+        }
+    }
+
+    // Update equipment
+    async function updateEquipment(event) {
+        event.preventDefault();
+
+        const equipmentId = document.getElementById('editEquipmentId').value;
+        const equipmentData = {
+            equipmentName: document.getElementById('editEquipmentName').value,
+            totalEquipment: parseInt(document.getElementById('editTotalEquipment').value)
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment/${equipmentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(equipmentData)
+            });
+
+            if (response.ok) {
+                // Close modal and refresh page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editEquipmentModal'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Error updating equipment');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error updating equipment');
+        }
+    }
+
+    // Confirm delete equipment
+    function confirmDeleteEquipment(equipmentId, equipmentName) {
+        equipmentToDelete = equipmentId;
+        document.getElementById('deleteEquipmentName').textContent = equipmentName;
+        const modal = new bootstrap.Modal(document.getElementById('deleteEquipmentModal'));
+        modal.show();
+    }
+
+    // Delete equipment
+    async function deleteEquipment() {
+        if (!equipmentToDelete) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment/${equipmentToDelete}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Close modal and refresh page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteEquipmentModal'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Error deleting equipment');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting equipment');
+        }
+    }
+</script>
+</body>
+</html>

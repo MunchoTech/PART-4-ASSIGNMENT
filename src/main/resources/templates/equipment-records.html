@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Records Management - Club Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+                <div class="text-center mb-4">
+                    <h4 class="navbar-brand"><i class="fas fa-users-cog me-2"></i>ClubManager</h4>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/dashboard}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/students}">
+                            <i class="fas fa-user-graduate me-2"></i>Students
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/clubs}">
+                            <i class="fas fa-users me-2"></i>Clubs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/events}">
+                            <i class="fas fa-calendar-alt me-2"></i>Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/equipment}">
+                            <i class="fas fa-tools me-2"></i>Equipment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/rooms}">
+                            <i class="fas fa-door-open me-2"></i>Rooms
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/registrations}">
+                            <i class="fas fa-clipboard-list me-2"></i>Registrations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/web/participations}">
+                            <i class="fas fa-handshake me-2"></i>Participations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/web/equipment-records}">
+                            <i class="fas fa-clipboard-check me-2"></i>Equipment Records
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-clipboard-check me-2"></i>Equipment Records Management</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEquipmentRecordModal">
+                    <i class="fas fa-plus me-2"></i>Add Equipment Record
+                </button>
+            </div>
+            <!-- Search -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" id="equipment-record-search" placeholder="Search equipment records..." onkeyup="filterEquipmentRecords()">
+                </div>
+            </div>
+            <!-- Equipment Records Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(equipmentRecords)}">
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-check fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No equipment records found</h5>
+                            <p class="text-muted">Add your first equipment record to get started!</p>
+                        </div>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(equipmentRecords)}" class="table-responsive">
+                        <table class="table table-hover" id="equipment-records-table">
+                            <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Equipment</th>
+                                <th>Club</th>
+                                <th>Checkout Date</th>
+                                <th>Return Date</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="record : ${equipmentRecords}" class="equipment-record-row">
+                                <td th:text="${record.student.studentFirstName + ' ' + record.student.studentLastName}" class="equipment-record-student">Student</td>
+                                <td th:text="${record.equipment.equipmentName}" class="equipment-record-equipment">Equipment</td>
+                                <td th:text="${record.club.clubName}" class="equipment-record-club">Club</td>
+                                <td th:text="${record.checkoutDate}">Checkout Date</td>
+                                <td th:text="${record.returnDate} ?: 'Not Returned'">Return Date</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            th:onclick="'editEquipmentRecord(' + ${record.id.studentId} + ',' + ${record.id.equipmentId} + ',' + ${record.id.clubId} + ')'">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            th:onclick="'confirmDeleteEquipmentRecord(' + ${record.id.studentId} + ',' + ${record.id.equipmentId} + ',' + ${record.id.clubId} + ', \'' + ${record.student.studentFirstName} + ' ' + ${record.student.studentLastName} + '\')'">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<!-- Add Equipment Record Modal -->
+<div class="modal fade" id="addEquipmentRecordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Equipment Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addEquipmentRecordForm" onsubmit="addEquipmentRecord(event)">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="studentId" class="form-label">Student</label>
+                        <select class="form-select" id="studentId" required>
+                            <option value="">Select Student</option>
+                            <option th:each="student : ${students}" th:value="${student.studentId}"
+                                    th:text="${student.studentFirstName + ' ' + student.studentLastName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="equipmentId" class="form-label">Equipment</label>
+                        <select class="form-select" id="equipmentId" required>
+                            <option value="">Select Equipment</option>
+                            <option th:each="equipment : ${equipment}" th:value="${equipment.equipmentId}" th:text="${equipment.equipmentName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="clubId" class="form-label">Club</label>
+                        <select class="form-select" id="clubId" required>
+                            <option value="">Select Club</option>
+                            <option th:each="club : ${clubs}" th:value="${club.clubId}" th:text="${club.clubName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="checkoutDate" class="form-label">Checkout Date</label>
+                        <input type="date" class="form-control" id="checkoutDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="returnDate" class="form-label">Return Date</label>
+                        <input type="date" class="form-control" id="returnDate">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Equipment Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Edit Equipment Record Modal -->
+<div class="modal fade" id="editEquipmentRecordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Equipment Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editEquipmentRecordForm" onsubmit="updateEquipmentRecord(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="editStudentId">
+                    <input type="hidden" id="editEquipmentId">
+                    <input type="hidden" id="editClubId">
+                    <div class="mb-3">
+                        <label for="editStudentIdSelect" class="form-label">Student</label>
+                        <select class="form-select" id="editStudentIdSelect" required>
+                            <option value="">Select Student</option>
+                            <option th:each="student : ${students}" th:value="${student.studentId}"
+                                    th:text="${student.studentFirstName + ' ' + student.studentLastName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEquipmentIdSelect" class="form-label">Equipment</label>
+                        <select class="form-select" id="editEquipmentIdSelect" required>
+                            <option value="">Select Equipment</option>
+                            <option th:each="equipment : ${equipment}" th:value="${equipment.equipmentId}" th:text="${equipment.equipmentName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editClubIdSelect" class="form-label">Club</label>
+                        <select class="form-select" id="editClubIdSelect" required>
+                            <option value="">Select Club</option>
+                            <option th:each="club : ${clubs}" th:value="${club.clubId}" th:text="${club.clubName}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCheckoutDate" class="form-label">Checkout Date</label>
+                        <input type="date" class="form-control" id="editCheckoutDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editReturnDate" class="form-label">Return Date</label>
+                        <input type="date" class="form-control" id="editReturnDate">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Equipment Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteEquipmentRecordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete equipment record for <strong id="deleteEquipmentRecordName"></strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="deleteEquipmentRecord()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE_URL = '/api';
+    let equipmentRecordToDelete = null;
+
+    // Filter equipment records
+    function filterEquipmentRecords() {
+        const search = document.getElementById('equipment-record-search').value.toLowerCase();
+        const rows = document.querySelectorAll('.equipment-record-row');
+        rows.forEach(row => {
+            const student = row.querySelector('.equipment-record-student').textContent.toLowerCase();
+            const equipment = row.querySelector('.equipment-record-equipment').textContent.toLowerCase();
+            const club = row.querySelector('.equipment-record-club').textContent.toLowerCase();
+            if (student.includes(search) || equipment.includes(search) || club.includes(search)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Add equipment record
+    async function addEquipmentRecord(event) {
+        event.preventDefault();
+        const recordData = {
+            student: { studentId: document.getElementById('studentId').value },
+            equipment: { equipmentId: document.getElementById('equipmentId').value },
+            club: { clubId: document.getElementById('clubId').value },
+            checkoutDate: document.getElementById('checkoutDate').value,
+            returnDate: document.getElementById('returnDate').value || null
+        };
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment-records`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(recordData)
+            });
+            if (response.ok) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addEquipmentRecordModal'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Error adding equipment record');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding equipment record');
+        }
+    }
+
+    // Edit equipment record
+    async function editEquipmentRecord(studentId, equipmentId, clubId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment-records/${studentId}/${equipmentId}/${clubId}`);
+            const record = await response.json();
+            document.getElementById('editStudentId').value = record.student.studentId;
+            document.getElementById('editEquipmentId').value = record.equipment.equipmentId;
+            document.getElementById('editClubId').value = record.club.clubId;
+            document.getElementById('editStudentIdSelect').value = record.student.studentId;
+            document.getElementById('editEquipmentIdSelect').value = record.equipment.equipmentId;
+            document.getElementById('editClubIdSelect').value = record.club.clubId;
+            document.getElementById('editCheckoutDate').value = record.checkoutDate;
+            document.getElementById('editReturnDate').value = record.returnDate || '';
+            const modal = new bootstrap.Modal(document.getElementById('editEquipmentRecordModal'));
+            modal.show();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error loading equipment record data');
+        }
+    }
+
+    // Update equipment record
+    async function updateEquipmentRecord(event) {
+        event.preventDefault();
+        const studentId = document.getElementById('editStudentId').value;
+        const equipmentId = document.getElementById('editEquipmentId').value;
+        const clubId = document.getElementById('editClubId').value;
+        const recordData = {
+            student: { studentId: document.getElementById('editStudentIdSelect').value },
+            equipment: { equipmentId: document.getElementById('editEquipmentIdSelect').value },
+            club: { clubId: document.getElementById('editClubIdSelect').value },
+            checkoutDate: document.getElementById('editCheckoutDate').value,
+            returnDate: document.getElementById('editReturnDate').value || null
+        };
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment-records/${studentId}/${equipmentId}/${clubId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(recordData)
+            });
+            if (response.ok) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editEquipmentRecordModal'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Error updating equipment record');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error updating equipment record');
+        }
+    }
+
+    // Confirm delete equipment record
+    function confirmDeleteEquipmentRecord(studentId, equipmentId, clubId, studentName) {
+        equipmentRecordToDelete = { studentId, equipmentId, clubId };
+        document.getElementById('deleteEquipmentRecordName').textContent = studentName;
+        const modal = new bootstrap.Modal(document.getElementById('deleteEquipmentRecordModal'));
+        modal.show();
+    }
+
+    // Delete equipment record
+    async function deleteEquipmentRecord() {
+        if (!equipmentRecordToDelete) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipment-records/${equipmentRecordToDelete.studentId}/${equipmentRecordToDelete.equipmentId}/${equipmentRecordToDelete.clubId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteEquipmentRecordModal'));
+                modal.hide();
+                window.location.reload();
+            } else {
+                alert('Error deleting equipment record');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting equipment record');
+        }
+    }
+</script>
+</body>
+</html>
